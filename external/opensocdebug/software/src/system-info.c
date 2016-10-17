@@ -35,7 +35,8 @@ const struct module_types module_lookup[MODULES_MAX_ID] = {
         { .name = "MAM" },
         { .name = "STM" },
         { .name = "CTM" },
-	{ .name = "System-Diagnosis"}
+	{ .name = "System-Diagnosis"},
+	{ .name = "Debug-Processor"}
 };
 
 const uint16_t scmid = 0x1;
