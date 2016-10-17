@@ -101,10 +101,10 @@ module compute_tile_dm
    logic         wb_mem_err_o;
    logic [31:0]  wb_mem_dat_o;
 
-   dii_flit [CONFIG.DEBUG_NUM_MODS-1:0] dii_in;
-   logic [CONFIG.DEBUG_NUM_MODS-1:0]    dii_in_ready;
-   dii_flit [CONFIG.DEBUG_NUM_MODS-1:0] dii_out;
-   logic [CONFIG.DEBUG_NUM_MODS-1:0]    dii_out_ready;
+   dii_flit [CONFIG.DEBUG_NUM_MODS-2:0] dii_in;
+   logic [CONFIG.DEBUG_NUM_MODS-2:0]    dii_in_ready;
+   dii_flit [CONFIG.DEBUG_NUM_MODS-2:0] dii_out;
+   logic [CONFIG.DEBUG_NUM_MODS-2:0]    dii_out_ready;
 
    generate
       if (CONFIG.USE_DEBUG == 1) begin
@@ -321,6 +321,18 @@ module compute_tile_dm
          	.sram_addr (wb_mem_adr_i),
         	.sram_ce (1'b1),
         	.sram_we (wb_mem_we_i));
+            
+	    osd_debug_processor #(
+		.CONFIG (CONFIG))
+              u_debug_processor
+               (.clk  (clk),
+                .rst  (rst_dbg),
+                .id   (DEBUG_BASEID + 1 + c*CONFIG.DEBUG_MODS_PER_CORE + 3),
+                .debug_in (dii_out[1 + c*CONFIG.DEBUG_MODS_PER_CORE + 3]),
+                .debug_in_ready (dii_out_ready[1 + c*CONFIG.DEBUG_MODS_PER_CORE + 3]),
+                .debug_out (dii_in[1+c*CONFIG.DEBUG_MODS_PER_CORE + 3]),
+                .debug_out_ready (dii_in_ready[1 + c*CONFIG.DEBUG_MODS_PER_CORE + 3]),
+		.rst_cpu (rst_cpu));
 
          end
       end
