@@ -42,3 +42,8 @@ scope = public
 datatype = bool
 paramtype = cmdlinearg
 scope = public
+
+[parameter meminit]
+datatype = file
+paramtype = cmdlinearg
+scope = public
