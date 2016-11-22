@@ -10,13 +10,23 @@
 // OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the
 // License.
-//
+// 
 // Authors:
 //    Wei Song <ws327@cam.ac.uk>
 //    Stefan Wallentowitz <stefan@wallentowitz.de>
 
 import dii_package::dii_flit;
 
+//
+// Segment of the DII ring
+//
+// A ring segment are simply PORTS routers in a row. It can be used to make
+// it easier to connect multiple participants to the ring and pass the signals
+// for multiple routers through the design hierarchy as array.
+//
+// The ext* ports connect to the remaining ring network, the dii_* ports are the
+// PORTS local ports of the routers in the ring segment.
+//
 module debug_ring_expand
   #(parameter PORTS = 1,
     parameter BUFFER_SIZE = 4)

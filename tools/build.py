@@ -592,7 +592,7 @@ def build_externals_glip_software(options):
     info(" + Configure")
     ensure_directory(objdir)
 
-    cmd = "{}/configure --prefix={} --enable-cypressfx2 --enable-jtag --enable-tcp".format(src, prefix)
+    cmd = "{}/configure --prefix={} --enable-cypressfx2 --enable-jtag --enable-tcp --enable-debug".format(src, prefix)
     run_command(cmd, cwd=objdir)
 
     info(" + Build")
@@ -643,7 +643,7 @@ def build_externals_opensocdebug_software(options, env):
     info(" + Configure")
     ensure_directory(objdir)
 
-    cmd = "{}/configure --prefix={} --enable-python-bindings".format(src, prefix)
+    cmd = "{}/configure --prefix={} --enable-python-bindings --enable-debug".format(src, prefix)
     run_command(cmd, cwd=objdir, env=env)
 
     info(" + Build")

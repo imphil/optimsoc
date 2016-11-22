@@ -24,8 +24,6 @@
  *
  * This module encapsulates the basic Open SoC Debug components, the Host
  * Interface Module (HIM) and the System Control Module (SCM).
- * The two modules need to be connected to the debug NoC (DII) using the
- * scm_* and him_* ports.
  *
  * Parameters:
  *   NUM_MODULES:
@@ -67,24 +65,27 @@ module debug_interface
    // CPU reset request
    output cpu_rst
    );
+   
+   // number of units connected to the debug ring segment in this file
+   localparam DEBUG_RING_SEGMENT_PORTS = 2;
 
-   dii_flit ring_tie;
-   assign ring_tie.valid = 0;
-   logic  ring_tie_ready;
-
-   dii_flit [1:0] dii_in;
-   logic [1:0] dii_in_ready;
-   dii_flit [1:0] dii_out;
-   logic [1:0] dii_out_ready;
+   dii_flit [DEBUG_RING_SEGMENT_PORTS-1:0] dii_in;
+   logic [DEBUG_RING_SEGMENT_PORTS-1:0] dii_in_ready;
+   dii_flit [DEBUG_RING_SEGMENT_PORTS-1:0] dii_out;
+   logic [DEBUG_RING_SEGMENT_PORTS-1:0] dii_out_ready;
 
    debug_ring_expand
-     #(.PORTS(2))
+     #(.PORTS(DEBUG_RING_SEGMENT_PORTS))
    u_debug_ring_segment
-     (.*,
-      .id_map        ({10'd1,10'd0}),
+      (.clk          (clk),
       .rst           (rst),
-      .ext_in        ({ring_in[0],ring_tie}),
-      .ext_in_ready  ({ring_in_ready[0],ring_tie_ready}),
+      .id_map        ({10'd1,10'd0}),      
+      .dii_in        (dii_in),
+      .dii_in_ready  (dii_in_ready),
+      .dii_out       (dii_out),
+      .dii_out_ready (dii_out_ready),
+      .ext_in        (ring_in),
+      .ext_in_ready  (ring_in_ready),
       .ext_out       (ring_out),
       .ext_out_ready (ring_out_ready));
 

@@ -22,12 +22,4 @@ files =
   common/source/dbgnoc_na_input.v
   common/source/dbgnoc_dma_wb.v
   common/source/dbgnoc_conf.v
-  /home/ga63kot/src2/optimsoc/sources/src/soc/hw/debug_system/verilog/dbgnoc_conf_if.v
-
-[fileset include_files]
-file_type = verilogSource
-is_include_file = true
-usage = sim synth
-files =
-  /home/ga63kot/src2/optimsoc/sources/src/soc/hw/debug_system/verilog/dbg_config.vh
-  /home/ga63kot/src2/optimsoc/sources/src/soc/hw/functions/optimsoc_functions.vh
+  /home/no56hud/src/optimsoc/src/soc/hw/debug_system/verilog/dbgnoc_conf_if.v

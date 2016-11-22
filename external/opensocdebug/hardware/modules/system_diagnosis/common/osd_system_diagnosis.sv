@@ -32,7 +32,6 @@ import dii_package::dii_flit;
 module osd_system_diagnosis
    #(
       parameter SYSTEMID='x,
-      parameter NUM_MOD='x,
       parameter MAX_PKT_LEN=8)
    (
       input clk, rst,

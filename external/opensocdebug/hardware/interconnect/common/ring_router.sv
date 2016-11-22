@@ -11,6 +11,11 @@
 // specific language governing permissions and limitations under the
 // License.
 //
+// Uni-directional Ring NoC router with two virtual channels and one local port
+//
+// The two virtual channels are used for deadlock avoidance. Local ports always
+// inject into VC0 and receive from both VC0 and VC1.
+//
 // Authors:
 //    Stefan Wallentowitz <stefan@wallentowitz.de>
 
@@ -21,15 +26,22 @@ module ring_router
    (
     input         clk, rst,
 
+    // ID of this router
     input [9:0]   id,
 
+    // input virtual channel 0
     input dii_flit   ring_in0, output ring_in0_ready,
+    // input virtual channel 1
     input dii_flit   ring_in1, output ring_in1_ready,
 
+    // output virtual channel 0
     output dii_flit   ring_out0, input ring_out0_ready,
+    // output virtual channel 1
     output dii_flit   ring_out1, input ring_out1_ready,
 
+    // local port input
     input dii_flit   local_in, output local_in_ready,
+    // local port output
     output dii_flit   local_out, input local_out_ready
     );
 

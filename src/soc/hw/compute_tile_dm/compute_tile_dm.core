@@ -14,8 +14,6 @@ depend =
   opensocdebug:modules:ctm_mor1kx
   opensocdebug:modules:system_diagnosis
   opensocdebug:modules:system_diagnosis_source
-  opensocdebug:modules:debug_processor
-  opensocdebug:modules:debug_processor_source
   opensocdebug:modules:mam_wb
   optimsoc:base:config
 

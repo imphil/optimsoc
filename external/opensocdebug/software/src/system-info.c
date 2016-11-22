@@ -35,8 +35,8 @@ const struct module_types module_lookup[MODULES_MAX_ID] = {
         { .name = "MAM" },
         { .name = "STM" },
         { .name = "CTM" },
-	{ .name = "System-Diagnosis"},
-	{ .name = "Debug-Processor"}
+	{ .name = "CEG"},
+	{ .name = "DPR"}
 };
 
 const uint16_t scmid = 0x1;
@@ -61,16 +61,21 @@ int osd_system_enumerate(struct osd_context *ctx) {
 
     osd_reg_read16(ctx, scmid, 0x200, &ctx->system_info->identifier);
 
+
     osd_reg_read16(ctx, scmid, 0x202, &ctx->system_info->max_pkt_len);
 
     ctx->system_info->modules[0].addr = 0;
     ctx->system_info->modules[0].type = 0;
     ctx->system_info->modules[0].version = 0;
 
+    printf("Found system ID %d with %d debug modules\n", ctx->system_info->identifier, mod_num);
+
     for (size_t i = 1; i < mod_num; i++) {
+        printf("  Querying module %d/%d\n", i, mod_num);
         struct osd_module_info *mod = &ctx->system_info->modules[i];
         mod->addr = i;
         osd_reg_read16(ctx, mod->addr, 0, &mod->type);
+        printf("    type: %d\n", mod->type);
         if (mod->type == OSD_MOD_MAM) {
             ctx->system_info->num_memories++;
 
@@ -123,7 +128,7 @@ int osd_system_enumerate(struct osd_context *ctx) {
             struct osd_system_diagnosis_descriptor *system_diagnosis;
             system_diagnosis = calloc(1, sizeof(struct osd_system_diagnosis_descriptor));
             mod->descriptor.system_diagnosis = system_diagnosis;
-            
+
             osd_reg_read16(ctx, mod->addr, 0x200, &system_diagnosis->xlen);
         }
 

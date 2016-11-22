@@ -52,7 +52,10 @@ module osd_debug_processor
    osd_regaccess_layer
      #(.MODID(16'h7), .MODVERSION(16'h0),
        .MAX_REG_SIZE(16), .CAN_STALL(1))
-   u_regaccess(.*,
+   u_regaccess(.debug_in(debug_in),
+               .debug_in_ready(debug_in_ready),
+               .debug_out(debug_out),
+               .debug_out_ready(debug_out_ready),
                .module_in (dp_out),
                .module_in_ready (dp_out_ready),
                .module_out (dp_in),
@@ -86,7 +89,7 @@ module osd_debug_processor
 		.dbgnoc_in_flit_conv (dbgnoc_in_flit_conv),
 		.dbgnoc_in_valid_conv (dbgnoc_in_valid_conv),
 		.dbgnoc_out_ready_conv (dbgnoc_out_ready_conv)
-   		);
+	);
 
    dii_flit     dbgnoc_in_flit_conv;
    logic [1:0]  dbgnoc_in_valid_conv;

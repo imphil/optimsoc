@@ -73,6 +73,8 @@ package optimsoc;
       logic              USE_DEBUG;
       logic              DEBUG_STM;
       logic              DEBUG_CTM;
+      logic              DEBUG_CEG; // Core Event Generator
+      logic              DEBUG_DPR; // Diagnosis Processor      
    } base_config_t;
 
    typedef struct packed {
@@ -105,6 +107,8 @@ package optimsoc;
       logic              USE_DEBUG;
       logic              DEBUG_STM;
       logic              DEBUG_CTM;
+      logic              DEBUG_CEG; // Core Event Generator
+      logic              DEBUG_DPR; // Diagnosis Processor
 
       // -> derived
       integer            DEBUG_MODS_PER_CORE;
@@ -132,15 +136,21 @@ package optimsoc;
       derive_config.USE_DEBUG = conf.USE_DEBUG;
       derive_config.DEBUG_STM = conf.DEBUG_STM;
       derive_config.DEBUG_CTM = conf.DEBUG_CTM;
+      derive_config.DEBUG_CEG = conf.DEBUG_CEG;
+      derive_config.DEBUG_DPR = conf.DEBUG_DPR;
 
       // Derive the other parameters
       derive_config.TOTAL_NUM_CORES = conf.NUMCTS * conf.CORES_PER_TILE;
       derive_config.NOC_FLIT_WIDTH = conf.NOC_DATA_WIDTH + conf.NOC_TYPE_WIDTH;
-      derive_config.DEBUG_MODS_PER_CORE = (conf.DEBUG_STM + conf.DEBUG_CTM + 2) * conf.USE_DEBUG;	// + 2 for system diagnosis module and debug processor
-      derive_config.DEBUG_MODS_PER_TILE = (1 + derive_config.DEBUG_MODS_PER_CORE *
-                                           conf.CORES_PER_TILE) * conf.USE_DEBUG;
-      derive_config.DEBUG_NUM_MODS = (1 + conf.NUMCTS *
-                                      derive_config.DEBUG_MODS_PER_TILE) * conf.USE_DEBUG;
+      derive_config.DEBUG_MODS_PER_CORE = (conf.DEBUG_STM + conf.DEBUG_CTM + conf.DEBUG_CEG) * conf.USE_DEBUG;
+      derive_config.DEBUG_MODS_PER_TILE = (1 /* MAM */
+                                           + derive_config.DEBUG_MODS_PER_CORE 
+                                           * conf.CORES_PER_TILE
+                                          ) * conf.USE_DEBUG;
+      derive_config.DEBUG_NUM_MODS = (1 /* SCM */ + 
+                                      conf.NUMCTS * derive_config.DEBUG_MODS_PER_TILE + 
+                                      conf.DEBUG_DPR
+                                     ) * conf.USE_DEBUG;
    endfunction // DERIVE_CONFIG
 
 endpackage // optimsoc

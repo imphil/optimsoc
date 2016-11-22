@@ -5,6 +5,8 @@ depend =
   optimsoc:tile:compute_tile_dm
   optimsoc:debug:debug_interface
   optimsoc:lisnoc:mesh2x2
+  opensocdebug:modules:debug_processor
+  opensocdebug:modules:debug_processor_source
 
 [fileset src_files]
 file_type = systemVerilogSource

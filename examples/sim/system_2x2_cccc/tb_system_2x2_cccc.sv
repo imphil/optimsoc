@@ -58,7 +58,7 @@ module tb_system_2x2_cccc(
      BASE_CONFIG = '{ NUMTILES: 4,
                       NUMCTS: 4,
                       CTLIST: {{60{16'hx}}, 16'h0, 16'h1, 16'h2, 16'h3},
-                      CORES_PER_TILE: NUM_CORES,
+                      CORES_PER_TILE: 32'(NUM_CORES),
                       GMEM_SIZE: 0,
                       GMEM_TILE: 'x,
                       NOC_DATA_WIDTH: 32,
@@ -72,7 +72,9 @@ module tb_system_2x2_cccc(
                       LMEM_STYLE: PLAIN,
                       USE_DEBUG: 1'(USE_DEBUG),
                       DEBUG_STM: 1,
-                      DEBUG_CTM: 1
+                      DEBUG_CTM: 1,
+                      DEBUG_CEG: 1,
+                      DEBUG_DPR: 0
                       };
 
    localparam config_t CONFIG = derive_config(BASE_CONFIG);
