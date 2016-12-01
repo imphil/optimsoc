@@ -56,7 +56,7 @@ module tb_compute_tile(
      BASE_CONFIG = '{ NUMTILES: 1,
                       NUMCTS: 1,
                       CTLIST: {{63{16'hx}}, 16'h0},
-                      CORES_PER_TILE: NUM_CORES,
+                      CORES_PER_TILE: 32'(NUM_CORES),
                       GMEM_SIZE: 0,
                       GMEM_TILE: 0,
                       NOC_DATA_WIDTH: 32,
@@ -70,7 +70,9 @@ module tb_compute_tile(
                       LMEM_STYLE: PLAIN,
                       USE_DEBUG: 1'(USE_DEBUG),
                       DEBUG_STM: 1,
-                      DEBUG_CTM: 1
+                      DEBUG_CTM: 1,
+                      DEBUG_CEG: 0,
+                      DEBUG_DPR: 0
                       };
 
    localparam config_t CONFIG = derive_config(BASE_CONFIG);

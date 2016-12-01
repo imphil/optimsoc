@@ -74,7 +74,7 @@ package optimsoc;
       logic              DEBUG_STM;
       logic              DEBUG_CTM;
       logic              DEBUG_CEG; // Core Event Generator
-      logic              DEBUG_DPR; // Diagnosis Processor      
+      logic              DEBUG_DPR; // Diagnosis Processor
    } base_config_t;
 
    typedef struct packed {
