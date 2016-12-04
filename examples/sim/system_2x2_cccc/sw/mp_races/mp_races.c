@@ -72,7 +72,7 @@ int mp_is_msg_available()
 }
 
 /**
- * Receive a message
+ * Receive a message (non-blocking)
  *
  * After processing it, "delete" it from the message queue by setting
  * msg.valid to 0.
@@ -80,12 +80,29 @@ int mp_is_msg_available()
  * @param[out] msg received message
  * @return 0 on success
  */
-int mp_rcv_msg(mp_message_t **msg)
+int mp_rcv_msg_nb(mp_message_t **msg)
 {
     if (msg_buf[optimsoc_get_ctrank()][0].valid == 0) {
         printf("%s: no message available\n", __FUNCTION__);
         return 1;
     }
+
+    *msg = &msg_buf[optimsoc_get_ctrank()][0];
+    return 0;
+}
+
+/**
+ * Receive a message (blocking)
+ *
+ * @see mp_rcv_msg_nb
+ *
+ * @param[out] msg received message
+ * @return 0 on success
+ */
+int mp_rcv_msg(mp_message_t **msg)
+{
+    // wait for new message
+    while (msg_buf[optimsoc_get_ctrank()][0].valid == 0) {}
 
     *msg = &msg_buf[optimsoc_get_ctrank()][0];
     return 0;
@@ -107,8 +124,8 @@ void _mp_recv(unsigned int *buffer, int len)
     source_rank = optimsoc_get_tilerank(source_tile);
 
     // Print hello for this
-    printf("msg received from %d with length %d!\n", source_rank, len);
-    printf("type: %d, data: %d\n", buffer[1], buffer[2]);
+    //printf("msg received from %d with length %d!\n", source_rank, len);
+    //printf("type: %d, data: %d\n", buffer[1], buffer[2]);
 
     dest_rank = optimsoc_get_ctrank();
 
@@ -151,13 +168,33 @@ static void mp_send_msg(unsigned int dest, uint32_t type, uint32_t payload)
 
 static void task_bank()
 {
+    int rv;
     int balance = 100;
 
     // broadcast balance to all ATMs
     mp_send_msg(1, BALANCE_INFO, balance);
     mp_send_msg(2, BALANCE_INFO, balance);
 
-    while (1) {};
+    mp_message_t *msg;
+
+    while (1) {
+        rv = mp_rcv_msg(&msg);
+        if (rv != 0) {
+            printf("%s: message passing error\n", __FUNCTION__);
+            return; // we don't want to recover from that
+        }
+
+        if (msg->type == CHANGE_BALANCE) {
+            // change balance of account
+            balance += msg->payload[0];
+
+            printf("new balance is %d, broadcasting to all ATMs\n", balance);
+
+            // broadcast new balance to all ATMs
+            mp_send_msg(1, BALANCE_INFO, balance);
+            mp_send_msg(2, BALANCE_INFO, balance);
+        }
+    }
 }
 
 static void task_atm_1()
@@ -165,10 +202,13 @@ static void task_atm_1()
     mp_message_t* msg;
     int atm_balance;
 
+    // XXX: make this random
+    int do_withdraw_money = 1;
+
     while (1) {
         if (mp_is_msg_available()) {
             printf("message available at atm1\n");
-            int rv = mp_rcv_msg(&msg);
+            int rv = mp_rcv_msg_nb(&msg);
             if (rv != 0) {
                 printf("ERROR receiving message\n");
                 continue;
@@ -178,15 +218,21 @@ static void task_atm_1()
                 msg->valid = 0; // remove from queue
                 printf("%s: set balance to %d\n", __FUNCTION__, atm_balance);
             }
+
+            if (do_withdraw_money && atm_balance > 0) {
+                printf("deducting 70 from account\n");
+                mp_send_msg(0, CHANGE_BALANCE, -70);
+
+                do_withdraw_money = 0;
+            }
         }
     }
-
-    //mp_send_msg(0, CHANGE_BALANCE, -70);
 }
 
 static void task_atm_2()
 {
-    mp_send_msg(0, CHANGE_BALANCE, -70);
+    // both behave identical -> race condition
+    task_atm_1();
 }
 
 /**
@@ -225,6 +271,4 @@ void main()
         task_atm_2();
         printf("task_atm_2 finished\n");
     }
-
-    printf("all finished\n");
 }

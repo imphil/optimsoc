@@ -22,4 +22,4 @@ files =
   common/source/dbgnoc_na_input.v
   common/source/dbgnoc_dma_wb.v
   common/source/dbgnoc_conf.v
-  /home/no56hud/src/optimsoc/src/soc/hw/debug_system/verilog/dbgnoc_conf_if.v
+  $HOME/src/optimsoc/src/soc/hw/debug_system/verilog/dbgnoc_conf_if.v
