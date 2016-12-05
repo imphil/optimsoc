@@ -23,5 +23,6 @@
 
 PROGRAM=mp_races
 
-BUILDSCRIPTS=$(shell pkg-config --variable=buildscriptdir optimsoc-baremetal)
+BUILDSCRIPTS=$(shell pkg-config --variable=buildscriptdir optimsoc-baremetal-runtime)
 include $(BUILDSCRIPTS)/Makefile.inc
+

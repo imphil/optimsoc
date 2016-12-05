@@ -35,6 +35,9 @@
 #include <optimsoc-mp.h>
 #include <or1k-support.h>
 #include <optimsoc-baremetal.h>
+#include <optimsoc-runtime.h>
+#include <string.h>
+#include <errno.h>
 
 #include <assert.h>
 
@@ -44,7 +47,6 @@ typedef enum {
 } mp_message_type_t;
 
 typedef struct {
-    uint32_t valid;
     uint32_t src;
     mp_message_type_t type;
     size_t payload_len;
@@ -56,8 +58,8 @@ typedef struct {
 // message buffer per tile
 #define MSG_BUF_SIZE 1
 
-// message buffer (per tile)
-mp_message_t msg_buf[NUM_TILES][MSG_BUF_SIZE];
+// per-tile buffer for incoming messages
+struct optimsoc_list_t *msg_buf;
 
 
 /**
@@ -67,28 +69,23 @@ mp_message_t msg_buf[NUM_TILES][MSG_BUF_SIZE];
  */
 int mp_is_msg_available()
 {
-    int rank = optimsoc_get_ctrank();
-    return msg_buf[rank][0].valid;
+    return optimsoc_list_length(msg_buf) != 0;
 }
 
 /**
  * Receive a message (non-blocking)
  *
- * After processing it, "delete" it from the message queue by setting
- * msg.valid to 0.
- *
  * @param[out] msg received message
  * @return 0 on success
+ * @return -EAGAIN if no data is available at this moment
  */
 int mp_rcv_msg_nb(mp_message_t **msg)
 {
-    if (msg_buf[optimsoc_get_ctrank()][0].valid == 0) {
-        printf("%s: no message available\n", __FUNCTION__);
-        return 1;
+    *msg = optimsoc_list_remove_head(msg_buf);
+    if (*msg == NULL) {
+        return 0;
     }
-
-    *msg = &msg_buf[optimsoc_get_ctrank()][0];
-    return 0;
+    return -EAGAIN;
 }
 
 /**
@@ -101,10 +98,9 @@ int mp_rcv_msg_nb(mp_message_t **msg)
  */
 int mp_rcv_msg(mp_message_t **msg)
 {
-    // wait for new message
-    while (msg_buf[optimsoc_get_ctrank()][0].valid == 0) {}
-
-    *msg = &msg_buf[optimsoc_get_ctrank()][0];
+    do {
+        *msg = optimsoc_list_remove_head(msg_buf);
+    } while (*msg == NULL);
     return 0;
 }
 
@@ -118,26 +114,23 @@ int mp_rcv_msg(mp_message_t **msg)
  */
 void _mp_recv(unsigned int *buffer, int len)
 {
-    int source_tile, source_rank, dest_rank;
+    int source_tile, source_rank;
 
     source_tile = extract_bits(buffer[0], OPTIMSOC_SRC_MSB, OPTIMSOC_SRC_LSB);
     source_rank = optimsoc_get_tilerank(source_tile);
 
     // Print hello for this
-    //printf("msg received from %d with length %d!\n", source_rank, len);
-    //printf("type: %d, data: %d\n", buffer[1], buffer[2]);
+    printf("msg received from %d with length %d!\n", source_rank, len);
+    printf("type: %d, data: %d\n", buffer[1], buffer[2]);
 
-    dest_rank = optimsoc_get_ctrank();
+    mp_message_t *msg = malloc(sizeof(mp_message_t));
+    assert(msg);
+    msg->src = source_rank;
+    msg->type = buffer[1];
+    msg->payload_len = 1;
+    msg->payload[0] = buffer[2];
 
-    // wait until we have a buffer space available
-    // XXX: missing: multi-queue support
-    while (msg_buf[dest_rank][0].valid == 1) {}
-
-    msg_buf[dest_rank][0].valid = 1;
-    msg_buf[dest_rank][0].src = source_rank;
-    msg_buf[dest_rank][0].type = buffer[1];
-    msg_buf[dest_rank][0].payload_len = 1;
-    msg_buf[dest_rank][0].payload[0] = buffer[2];
+    optimsoc_list_add_tail(msg_buf, msg);
 }
 
 /**
@@ -183,6 +176,7 @@ static void task_bank()
             printf("%s: message passing error\n", __FUNCTION__);
             return; // we don't want to recover from that
         }
+        printf("received message\n");
 
         if (msg->type == CHANGE_BALANCE) {
             // change balance of account
@@ -191,15 +185,16 @@ static void task_bank()
             printf("new balance is %d, broadcasting to all ATMs\n", balance);
 
             // broadcast new balance to all ATMs
-            mp_send_msg(1, BALANCE_INFO, balance);
-            mp_send_msg(2, BALANCE_INFO, balance);
+            /*mp_send_msg(1, BALANCE_INFO, balance);
+            mp_send_msg(2, BALANCE_INFO, balance);*/
         }
+        free(msg);
     }
 }
 
 static void task_atm_1()
 {
-    mp_message_t* msg;
+    mp_message_t *msg;
     int atm_balance;
 
     // XXX: make this random
@@ -210,12 +205,11 @@ static void task_atm_1()
             printf("message available at atm1\n");
             int rv = mp_rcv_msg_nb(&msg);
             if (rv != 0) {
-                printf("ERROR receiving message\n");
+                printf("should not happen: message available, but not available?\n");
                 continue;
             }
             if (msg->type == BALANCE_INFO) {
                 atm_balance = msg->payload[0];
-                msg->valid = 0; // remove from queue
                 printf("%s: set balance to %d\n", __FUNCTION__, atm_balance);
             }
 
@@ -225,6 +219,7 @@ static void task_atm_1()
 
                 do_withdraw_money = 0;
             }
+            free(msg);
         }
     }
 }
@@ -250,6 +245,9 @@ void main()
     optimsoc_init(0);
     optimsoc_mp_simple_init();
 
+    // Initialize buffers for incoming messages
+    msg_buf = optimsoc_list_init(NULL);
+
     // Add handler for received messages (of class 0)
     optimsoc_mp_simple_addhandler(0, &_mp_recv);
     or1k_interrupts_enable();
@@ -271,4 +269,9 @@ void main()
         task_atm_2();
         printf("task_atm_2 finished\n");
     }
+}
+
+void init()
+{
+
 }
