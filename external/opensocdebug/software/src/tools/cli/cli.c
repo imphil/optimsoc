@@ -257,26 +257,26 @@ static int interpret(struct osd_context *ctx, char *line) {
 
             sleep(sec);
         }
-    } else if (CHECK_MATCH(cmd, "sysdiag")) {
+    } else if (CHECK_MATCH(cmd, "ceg")) {
         char *subcmd = strtok(NULL, " ");
 
         if (CHECK_MATCH(subcmd, "help")) {
-            PRINT_HELP(sysdiag);
+            PRINT_HELP(ceg);
         } else if (CHECK_MATCH(subcmd, "test")) {
-	    subcmd = strtok(NULL, " ");
-	    
+            subcmd = strtok(NULL, " ");
+
             if (CHECK_MATCH(subcmd, "help")) {
-                PRINT_HELP(sysdiag);
+                PRINT_HELP(ceg);
                 return 0;
             } else if (!subcmd){
                 fprintf(stderr, "Missing filename\n");
-                PRINT_HELP(sysdiag);
+                PRINT_HELP(ceg);
                 return 0;
             }
             char *file = subcmd;
             write_configreg(ctx);
-            printf("Generate System Diagosis Log\n");
-	    osd_system_diagnosis_log(ctx, 5, file);	    
+            printf("Generate log of all core events\n");
+            osd_ceg_log(ctx, 5, file);
         }
     } else {
         fprintf(stderr, "Unknown command: %s\n", cmd);

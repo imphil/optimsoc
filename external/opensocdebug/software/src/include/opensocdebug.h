@@ -68,7 +68,8 @@ enum osd_module_types {
     OSD_MOD_MAM = 3,
     OSD_MOD_STM = 4,
     OSD_MOD_CTM = 5,
-    OSD_MOD_SYSTEM_DIAGNOSIS = 6
+    OSD_MOD_CEG = 6,
+    OSD_MOD_DPR = 7,
 };
 
 struct osd_memory_descriptor {
@@ -90,7 +91,7 @@ struct osd_ctm_descriptor {
   uint16_t data_width;
 };
 
-struct osd_system_diagnosis_descriptor {
+struct osd_ceg_descriptor {
   uint16_t xlen;
 };
 
@@ -166,6 +167,8 @@ int osd_memory_loadelf(struct osd_context *ctx, uint16_t mod, char *filename, in
 int osd_stm_log(struct osd_context *ctx, uint16_t modid, char *filename);
 
 int osd_ctm_log(struct osd_context *ctx, uint16_t modid, char *filename, char* elffile);
+
+int osd_ceg_log(struct osd_context *ctx, uint16_t modid, char *filename);
 
 #ifdef __cplusplus
 } /* extern "C" */

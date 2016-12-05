@@ -144,15 +144,14 @@ int osd_stm_log(struct osd_context *ctx, uint16_t modid, char *filename) {
     return 0;
 }
 
-struct system_diagnosis_log_desc {
+struct ceg_log_desc {
     FILE *fh;
     uint16_t id;
     uint16_t xlen;
-    char printf_buf[STM_PRINT_CHARS];
 };
 
-static void system_diagnosis_log_handler(struct osd_context *ctx, void* arg, uint16_t* packet) {
-    struct system_diagnosis_log_desc *desc = (struct system_diagnosis_log_desc*) arg;
+static void ceg_log_handler(struct osd_context *ctx, void* arg, uint16_t* packet) {
+    struct ceg_log_desc *desc = (struct ceg_log_desc*) arg;
     FILE *fh = desc->fh;
 
     uint32_t timestamp;
@@ -161,40 +160,40 @@ static void system_diagnosis_log_handler(struct osd_context *ctx, void* arg, uin
     uint16_t event_id;
     uint32_t gpr_stack_data;
 
-   if (id == 1) {
-	event_id = packet[3];   	
-	fprintf(fh, "Event ID: %04x\n", event_id);
-   }
+    if (id == 1) {
+        event_id = packet[3];
+        fprintf(fh, "Event ID: %04x\n", event_id);
+    }
 
-   if (prev_id == 1) {
-	timestamp = (packet[4] << 16) | packet[3];	
-    	fprintf(fh, "Timestamp: %08x\n", timestamp);
-   }
-   
-   if (id == 1) {
-	counter = 0;
-   } else if (((id == 0) & (prev_id == 0)) || ((id == 2) & (prev_id == 0))) {     	
-	counter ++;	
-	gpr_stack_data = (packet[4] << 16) | packet[3];
-	fprintf(fh, "GPR/Stack Data %d: %08x\n", counter-1, gpr_stack_data);
-   }
+    if (prev_id == 1) {
+        timestamp = (packet[4] << 16) | packet[3];
+        fprintf(fh, "Timestamp: %08x\n", timestamp);
+    }
 
-   prev_id = packet[5];
+    if (id == 1) {
+        counter = 0;
+    } else if (((id == 0) & (prev_id == 0)) || ((id == 2) & (prev_id == 0))) {
+        counter ++;
+        gpr_stack_data = (packet[4] << 16) | packet[3];
+        fprintf(fh, "GPR/Stack Data %d: %08x\n", counter-1, gpr_stack_data);
+    }
+
+    prev_id = packet[5];
     return;
 }
 
 OSD_EXPORT
-int osd_system_diagnosis_log(struct osd_context *ctx, uint16_t modid, char *filename) {
-    struct osd_stm_descriptor *system_diagnosis = ctx->system_info->modules[modid].descriptor.system_diagnosis;
-    struct system_diagnosis_log_desc *d = calloc(sizeof(struct system_diagnosis_log_desc), 1);
+int osd_ceg_log(struct osd_context *ctx, uint16_t modid, char *filename) {
+    struct osd_ceg_descriptor *ceg = ctx->system_info->modules[modid].descriptor.ceg;
+    struct ceg_log_desc *d = calloc(sizeof(struct ceg_log_desc), 1);
 
-    d->xlen = system_diagnosis->xlen;
+    d->xlen = ceg->xlen;
     d->fh = fopen(filename, "w");
     d->id = modid;
     osd_module_claim(ctx, modid);
 
     osd_module_register_handler(ctx, modid, OSD_EVENT_TRACE, (void*) d,
-                                system_diagnosis_log_handler);
+                                ceg_log_handler);
     osd_module_unstall(ctx, modid);
     return 0;
 }

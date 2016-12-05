@@ -35,7 +35,9 @@
 #include "include/opensocdebug.h"
 
 #define OSD_EXPORT __attribute__ ((visibility("default")))
-#define MODULES_MAX_ID 7
+
+/** highest module ID assigned */
+#define MODULES_MAX_ID 8
 
 struct module_handler;
 
@@ -48,7 +50,7 @@ struct osd_module_info {
         struct osd_memory_descriptor *memory;
         struct osd_stm_descriptor *stm;
         struct osd_ctm_descriptor *ctm;
-        struct osd_system_diagnosis_descriptor *system_diagnosis;
+        struct osd_ceg_descriptor *ceg;
     } descriptor;
 };
 

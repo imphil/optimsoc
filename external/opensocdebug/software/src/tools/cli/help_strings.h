@@ -46,7 +46,7 @@ static const char* help_cmd =
         "  mem         Access memory\n"
         "  ctm         Configure core trace module\n"
         "  stm         Configure software trace module\n"
-	"  sysdiag     Loads configuration for System Diagnosis\n"
+        "  ceg         Loads configuration for System Diagnosis\n"
         "  terminal    Start terminal for device emulation module\n"
         "  wait        Wait for given seconds\n";
 
@@ -90,12 +90,12 @@ static const char* help_ctm_log =
         "  ctmid    CTM to receive logs from\n"
         "  elffile  ELF file to load symbols from, optional\n";
 
-static const char* help_sysdiag =
+static const char* help_ceg =
         "Available subcommands:\n"
         "  help        Print this help\n"
         "  test        Loads configuration for System Diagnosis\n"
         "Usage:\n"
-	"  sysdiag test <file>\n";
+        "  ceg test <file>\n";
 
 static const char* help_terminal =
         "Usage: terminal <id>\n"

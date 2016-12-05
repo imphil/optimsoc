@@ -35,8 +35,8 @@ const struct module_types module_lookup[MODULES_MAX_ID] = {
         { .name = "MAM" },
         { .name = "STM" },
         { .name = "CTM" },
-	{ .name = "CEG"},
-	{ .name = "DPR"}
+        { .name = "CEG"},
+        { .name = "DPR"}
 };
 
 const uint16_t scmid = 0x1;
@@ -124,12 +124,12 @@ int osd_system_enumerate(struct osd_context *ctx) {
 
             osd_reg_read16(ctx, mod->addr, 0x200, &ctm->addr_width);
             osd_reg_read16(ctx, mod->addr, 0x200, &ctm->data_width);
-        } else if (mod->type == OSD_MOD_SYSTEM_DIAGNOSIS) {
-            struct osd_system_diagnosis_descriptor *system_diagnosis;
-            system_diagnosis = calloc(1, sizeof(struct osd_system_diagnosis_descriptor));
-            mod->descriptor.system_diagnosis = system_diagnosis;
+        } else if (mod->type == OSD_MOD_CEG) {
+            struct osd_ceg_descriptor *ceg;
+            ceg = calloc(1, sizeof(struct osd_ceg_descriptor));
+            mod->descriptor.ceg = ceg;
 
-            osd_reg_read16(ctx, mod->addr, 0x200, &system_diagnosis->xlen);
+            osd_reg_read16(ctx, mod->addr, 0x200, &ceg->xlen);
         }
 
         osd_reg_read16(ctx, mod->addr, 1, &mod->version);

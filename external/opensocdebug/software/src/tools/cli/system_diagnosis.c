@@ -34,10 +34,11 @@ int write_configreg(struct osd_context *ctx) {
 
     osd_reg_write16(ctx, 5, 0x200, 0x0001);		// System On/Off
 
-    osd_reg_write16(ctx, 5, 0x201, 0x2540);		// First PC Event LSB
+    // trace _mp_rcv function
+    osd_reg_write16(ctx, 5, 0x201, 0x273c);		// First PC Event LSB
     osd_reg_write16(ctx, 5, 0x202, 0x0000);		// First PC Event MSB
     osd_reg_write16(ctx, 5, 0x203, 0x8001);		// First PC Event valid and Event ID 1
-
+/*
     osd_reg_write16(ctx, 5, 0x204, 0x0000);		// Second PC Event LSB
     osd_reg_write16(ctx, 5, 0x205, 0x0000);		// Second PC Event MSB
     osd_reg_write16(ctx, 5, 0x206, 0x8002);		// Second PC Event valid and Event ID 2
@@ -53,7 +54,7 @@ int write_configreg(struct osd_context *ctx) {
     osd_reg_write16(ctx, 5, 0x20d, 0x0000);		// Second Function Return Event LSB
     osd_reg_write16(ctx, 5, 0x20e, 0x0000);		// Second Function Return Event MSB
     osd_reg_write16(ctx, 5, 0x20f, 0x80c5);		// Second Function Return Event valid and Event ID 5
- 
+
     osd_reg_write16(ctx, 5, 0x210, 0x0000);		// First Memaddr Monitor Event LSB
     osd_reg_write16(ctx, 5, 0x211, 0x0000);		// First Memaddr Monitor Event MSB
     osd_reg_write16(ctx, 5, 0x212, 0x8006);		// First Memaddr Monitor Event valid and Event ID 6
@@ -80,7 +81,7 @@ int write_configreg(struct osd_context *ctx) {
 
     osd_reg_write16(ctx, 5, 0x222, 0x0000);		// Configuration GPR selection vector LSB
     osd_reg_write16(ctx, 5, 0x223, 0x0000);		// Configuration GPR selection vector MSB
-    osd_reg_write16(ctx, 5, 0x224, 0x8006);		// Configuration Fifth Event valid and Event ID 6
+    osd_reg_write16(ctx, 5, 0x224, 0x8006);		// Configuration Fifth Event valid and Event ID 6*/
 
     return success;
 }
