@@ -53,14 +53,8 @@ typedef struct {
     uint32_t payload[1]; // XXX: in reality this would be dynamic
 } mp_message_t;
 
-// number of compute tiles
-#define NUM_TILES 4
-// message buffer per tile
-#define MSG_BUF_SIZE 1
-
 // per-tile buffer for incoming messages
 struct optimsoc_list_t *msg_buf;
-
 
 /**
  * Lookahead: is a message available?
@@ -83,9 +77,9 @@ int mp_rcv_msg_nb(mp_message_t **msg)
 {
     *msg = optimsoc_list_remove_head(msg_buf);
     if (*msg == NULL) {
-        return 0;
+        return -EAGAIN;
     }
-    return -EAGAIN;
+    return 0;
 }
 
 /**
@@ -185,8 +179,8 @@ static void task_bank()
             printf("new balance is %d, broadcasting to all ATMs\n", balance);
 
             // broadcast new balance to all ATMs
-            /*mp_send_msg(1, BALANCE_INFO, balance);
-            mp_send_msg(2, BALANCE_INFO, balance);*/
+            mp_send_msg(1, BALANCE_INFO, balance);
+            mp_send_msg(2, BALANCE_INFO, balance);
         }
         free(msg);
     }
@@ -204,6 +198,7 @@ static void task_atm_1()
         if (mp_is_msg_available()) {
             printf("message available at atm1\n");
             int rv = mp_rcv_msg_nb(&msg);
+            printf("msg is %p\n", msg);
             if (rv != 0) {
                 printf("should not happen: message available, but not available?\n");
                 continue;
