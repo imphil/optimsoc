@@ -42,8 +42,9 @@
 #include <assert.h>
 
 typedef enum {
-    BALANCE_INFO,
-    CHANGE_BALANCE
+    GET_BALANCE_REQ,
+    GET_BALANCE_RESP,
+    SET_BALANCE_REQ
 } mp_message_type_t;
 
 typedef struct {
@@ -157,11 +158,6 @@ static void task_bank()
 {
     int rv;
     int balance = 100;
-
-    // broadcast balance to all ATMs
-    mp_send_msg(1, BALANCE_INFO, balance);
-    mp_send_msg(2, BALANCE_INFO, balance);
-
     mp_message_t *msg;
 
     while (1) {
@@ -172,15 +168,15 @@ static void task_bank()
         }
         printf("received message\n");
 
-        if (msg->type == CHANGE_BALANCE) {
+        if (msg->type == SET_BALANCE_REQ) {
             // change balance of account
-            balance += msg->payload[0];
-
-            printf("new balance is %d, broadcasting to all ATMs\n", balance);
-
-            // broadcast new balance to all ATMs
-            mp_send_msg(1, BALANCE_INFO, balance);
-            mp_send_msg(2, BALANCE_INFO, balance);
+            balance = msg->payload[0];
+            printf("new balance is %d\n", balance);
+        } else if (msg->type == GET_BALANCE_REQ) {
+            printf("Sending balance %d to %d\n", balance, msg->src);
+            mp_send_msg(msg->src, GET_BALANCE_RESP, balance);
+        } else {
+            // unknown message type, ignore.
         }
         free(msg);
     }
@@ -189,33 +185,37 @@ static void task_bank()
 static void task_atm_1()
 {
     mp_message_t *msg;
-    int atm_balance;
-
     // XXX: make this random
     int do_withdraw_money = 1;
+    int balance = 0;
+    int rv;
 
     while (1) {
-        if (mp_is_msg_available()) {
-            printf("message available at atm1\n");
-            int rv = mp_rcv_msg_nb(&msg);
-            printf("msg is %p\n", msg);
-            if (rv != 0) {
-                printf("should not happen: message available, but not available?\n");
+        // send request
+        mp_send_msg(0, GET_BALANCE_REQ, 0);
+
+        // get response
+        while (1) {
+            printf("got msg\n");
+            rv = mp_rcv_msg(&msg);
+            assert(rv == 0);
+            if (msg->type != GET_BALANCE_RESP) {
+                printf("... of wrong type\n");
+                free(msg);
                 continue;
             }
-            if (msg->type == BALANCE_INFO) {
-                atm_balance = msg->payload[0];
-                printf("%s: set balance to %d\n", __FUNCTION__, atm_balance);
-            }
-
-            if (do_withdraw_money && atm_balance > 0) {
-                printf("deducting 70 from account\n");
-                mp_send_msg(0, CHANGE_BALANCE, -70);
-
-                do_withdraw_money = 0;
-            }
+            balance = msg->payload[0];
             free(msg);
+            break;
         }
+        printf("Got balance %d\n", balance);
+
+        // decrement value
+        balance--;
+
+        // write back value
+        printf("Setting balance to %d\n", balance);
+        mp_send_msg(0, SET_BALANCE_REQ, balance);
     }
 }
 
