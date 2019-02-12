@@ -1,0 +1,14 @@
+module: test_noc_demux
+
+sources:
+  - ../../../util/optimsoc_functions.sv
+  - ../../../util/optimsoc-config.sv
+  - ../../../util/optimsoc-const.sv
+  - noc_demux_wrapper.sv
+  - ../../verilog/noc_demux.sv
+
+toplevel: noc_demux_wrapper
+
+simulators:
+  - vcs
+
